@@ -1,0 +1,17 @@
+with aggregation as (
+    SELECT visited_on, sum(amount) as amount
+    FROM customer 
+    GROUP BY visited_on)
+, finaltable as (
+    SELECT
+    c1.visited_on,sum(c2.amount * 1.0) AS amount,
+    round(AVG(c2.amount * 1.0),2) AS average_amount
+    FROM aggregation c1
+    JOIN aggregation c2
+    ON c2.visited_on BETWEEN DATEADD(DAY, -6, c1.visited_on) AND c1.visited_on
+    GROUP BY c1.visited_on)
+
+SELECT * from finaltable ft
+WHERE DATEADD(DAY, -6, ft.visited_on) in 
+(SELECT DISTINCT visited_on from customer)
+ORDER BY visited_on
